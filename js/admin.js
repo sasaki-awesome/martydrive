@@ -83,10 +83,7 @@ function buildEmojiRow() {
 function selectEmoji(e) {
   selectedEmoji = e;
   uploadedImg   = null;
-  document.getElementById("preview-emoji").textContent = e;
-  document.getElementById("preview-emoji").style.display = "block";
-  const old = document.getElementById("preview-img-el");
-  if (old) old.remove();
+  showPreviewEmoji(e);
   buildEmojiRow();
 }
 
@@ -97,34 +94,54 @@ function handleImgUpload(ev) {
   const reader = new FileReader();
   reader.onload = r => {
     uploadedImg = r.result;
-    document.getElementById("preview-emoji").style.display = "none";
-    let img = document.getElementById("preview-img-el");
-    if (!img) {
-      img = document.createElement("img");
-      img.id = "preview-img-el";
-      img.className = "img-preview";
-      document.getElementById("img-preview-wrap").prepend(img);
-    }
-    img.src = uploadedImg;
+    showPreviewImg(uploadedImg);
   };
   reader.readAsDataURL(file);
 }
 
 /* ---- DRAWER ---- */
-function openDrawer(id) {
-  editingId   = id;
-  uploadedImg = null;
-  document.getElementById("img-file").value = "";
-
+function resetPreview() {
+  /* 既存のプレビュー画像を完全にクリア */
   const oldImg = document.getElementById("preview-img-el");
   if (oldImg) oldImg.remove();
-  document.getElementById("preview-emoji").style.display = "block";
+  /* ファイル入力もリセット */
+  const fi = document.getElementById("img-file");
+  if (fi) fi.value = "";
+  uploadedImg = null;
+}
+
+function showPreviewImg(src) {
+  /* 画像プレビューを表示し絵文字を隠す */
+  document.getElementById("preview-emoji").style.display = "none";
+  let img = document.getElementById("preview-img-el");
+  if (!img) {
+    img = document.createElement("img");
+    img.id = "preview-img-el";
+    img.className = "img-preview";
+    img.style.cssText = "width:80px;height:80px;border-radius:8px;object-fit:cover;margin:0 auto 8px;display:block;";
+    document.getElementById("img-preview-wrap").prepend(img);
+  }
+  img.src = src;
+}
+
+function showPreviewEmoji(e) {
+  /* 絵文字プレビューを表示し画像を隠す */
+  const old = document.getElementById("preview-img-el");
+  if (old) old.remove();
+  const emojiEl = document.getElementById("preview-emoji");
+  emojiEl.textContent = e;
+  emojiEl.style.display = "block";
+}
+
+function openDrawer(id) {
+  editingId = id;
+  resetPreview();
 
   if (id === null) {
     /* 新規追加 */
     document.getElementById("drawer-title").textContent = "商品を追加";
     selectedEmoji = "📦";
-    document.getElementById("preview-emoji").textContent = "📦";
+    showPreviewEmoji("📦");
     document.getElementById("f-name").value     = "";
     document.getElementById("f-desc").value     = "";
     document.getElementById("f-cat").value      = "apparel";
@@ -139,31 +156,30 @@ function openDrawer(id) {
   } else {
     /* 編集 */
     const p = products.find(x => x.id === id);
+    if (!p) return;
     document.getElementById("drawer-title").textContent = "商品を編集";
     selectedEmoji = p.e1 || "📦";
-    document.getElementById("preview-emoji").textContent = selectedEmoji;
 
     if (p.img) {
+      /* 保存済み画像がある場合 */
       uploadedImg = p.img;
-      document.getElementById("preview-emoji").style.display = "none";
-      const img = document.createElement("img");
-      img.id = "preview-img-el";
-      img.className = "img-preview";
-      img.src = p.img;
-      document.getElementById("img-preview-wrap").prepend(img);
+      showPreviewImg(p.img);
+    } else {
+      /* 絵文字のみの場合 */
+      showPreviewEmoji(selectedEmoji);
     }
 
-    document.getElementById("f-name").value     = p.name;
-    document.getElementById("f-desc").value     = p.desc;
-    document.getElementById("f-cat").value      = p.cat;
-    document.getElementById("f-retail").value   = p.retail;
-    document.getElementById("f-price").value    = p.price;
-    document.getElementById("f-lot").value      = p.lot;
-    document.getElementById("f-lead").value     = p.lead;
-    document.getElementById("f-material").value = p.material;
-    document.getElementById("f-size").value     = p.size;
-    document.getElementById("f-colors").value   = p.colors;
-    document.getElementById("f-new").checked    = p.isnew;
+    document.getElementById("f-name").value     = p.name     || "";
+    document.getElementById("f-desc").value     = p.desc     || "";
+    document.getElementById("f-cat").value      = p.cat      || "apparel";
+    document.getElementById("f-retail").value   = p.retail   || "なし";
+    document.getElementById("f-price").value    = p.price    || "";
+    document.getElementById("f-lot").value      = p.lot      || "";
+    document.getElementById("f-lead").value     = p.lead     || "";
+    document.getElementById("f-material").value = p.material || "";
+    document.getElementById("f-size").value     = p.size     || "";
+    document.getElementById("f-colors").value   = p.colors   || "";
+    document.getElementById("f-new").checked    = p.isnew    || false;
   }
 
   buildEmojiRow();
