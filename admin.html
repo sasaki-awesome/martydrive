@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理画面 | MARTY CREW Wholesale</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* ADMIN-ONLY STYLES */
+.n-badge{font-size:10px;background:rgba(79,195,247,0.12);color:var(--accent);padding:2px 10px;border-radius:10px;border:0.5px solid var(--border);margin-left:6px;}
+.topbar{display:flex;align-items:center;gap:12px;padding:1rem 1.5rem;border-bottom:0.5px solid var(--border2);flex-wrap:wrap;}
+.topbar h2{font-size:16px;font-weight:700;flex:1;}
+.topbar-count{font-size:12px;color:var(--muted);}
+.btn{border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-add{background:var(--green);color:#0a2015;}
+.btn-add:hover{background:#5de8a0;}
+.btn-export{background:rgba(79,195,247,0.12);color:var(--accent);border:0.5px solid var(--border);}
+.btn-export:hover{background:rgba(79,195,247,0.22);}
+.filterbar{display:flex;gap:10px;padding:.75rem 1.5rem;border-bottom:0.5px solid var(--border2);flex-wrap:wrap;align-items:center;}
+.search-box{position:relative;flex:1;min-width:180px;}
+.search-box input{width:100%;background:rgba(255,255,255,0.05);border:0.5px solid var(--border);border-radius:8px;padding:7px 12px 7px 32px;color:var(--text);font-size:13px;outline:none;}
+.search-box input:focus{border-color:var(--accent);}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;}
+.cat-select{background:rgba(255,255,255,0.05);border:0.5px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:13px;outline:none;cursor:pointer;}
+.cat-select option{background:var(--card);}
+.table-wrap{flex:1;overflow-x:auto;padding:1rem 1.5rem;}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+thead tr{border-bottom:0.5px solid var(--border);}
+th{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;text-align:left;font-weight:500;}
+tbody tr{border-bottom:0.5px solid var(--border2);transition:background .1s;}
+tbody tr:hover{background:rgba(255,255,255,0.03);}
+td{padding:10px;font-size:13px;vertical-align:middle;}
+.td-img{width:52px;height:52px;background:linear-gradient(135deg,#1c2230,#141826);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden;}
+.td-img img{width:100%;height:100%;object-fit:cover;}
+.td-name{font-weight:700;margin-bottom:2px;}
+.td-desc{font-size:11px;color:var(--muted);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.td-cat{display:inline-block;font-size:10px;background:rgba(79,195,247,0.1);color:var(--accent);padding:2px 8px;border-radius:8px;}
+.td-price{color:var(--yellow);font-weight:700;}
+.td-lot{color:var(--green);}
+.td-new{display:inline-block;font-size:9px;background:rgba(61,214,140,0.15);color:var(--green);padding:2px 7px;border-radius:8px;font-weight:700;}
+.act-btns{display:flex;gap:6px;}
+.btn-edit{background:rgba(79,195,247,0.1);color:var(--accent);border:0.5px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;}
+.btn-edit:hover{background:rgba(79,195,247,0.2);}
+.btn-del{background:rgba(240,112,112,0.1);color:#f07070;border:0.5px solid rgba(240,112,112,0.2);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;}
+.btn-del:hover{background:rgba(240,112,112,0.2);}
+.empty-row td{text-align:center;color:var(--muted);padding:3rem;}
+/* DRAWER */
+.mback{display:none;position:fixed;inset:0;background:rgba(5,8,18,0.88);z-index:100;align-items:center;justify-content:center;padding:1rem;}
+.mback.on{display:flex;}
+.drawer{background:var(--card);border:0.5px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.drawer-head{padding:1.25rem 1.5rem 1rem;border-bottom:0.5px solid var(--border2);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--card);z-index:2;}
+.drawer-head h3{font-size:16px;font-weight:700;}
+.drawer-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
+.drawer-close:hover{color:var(--text);}
+.drawer-body{padding:1.5rem;}
+.form-row{margin-bottom:1rem;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;}
+.form-label{font-size:11px;color:var(--muted);margin-bottom:5px;display:block;}
+.form-label span{color:#f07070;}
+.form-input,.form-select,.form-textarea{width:100%;background:rgba(255,255,255,0.05);border:0.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-family:inherit;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-select option{background:var(--card);}
+.form-textarea{resize:vertical;min-height:80px;}
+.img-upload-area{border:1px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);}
+.img-upload-area:hover{border-color:var(--accent);}
+.img-upload-area input{display:none;}
+.img-preview{width:80px;height:80px;border-radius:8px;object-fit:cover;margin:0 auto 8px;display:block;}
+.img-emoji-big{font-size:48px;margin-bottom:6px;}
+.img-upload-hint{font-size:12px;color:var(--muted);}
+.emoji-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.emoji-opt{font-size:22px;cursor:pointer;padding:4px;border-radius:6px;border:1.5px solid transparent;}
+.emoji-opt:hover{background:rgba(79,195,247,0.1);}
+.emoji-opt.sel{border-color:var(--accent);background:rgba(79,195,247,0.12);}
+.toggle-row{display:flex;align-items:center;gap:10px;}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;display:inline-block;}
+.toggle input{display:none;}
+.toggle-bg{position:absolute;inset:0;background:rgba(255,255,255,0.1);border-radius:11px;transition:.2s;}
+.toggle input:checked~.toggle-bg{background:var(--green);}
+.toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s;z-index:1;}
+.toggle input:checked~.toggle-knob{left:21px;}
+.drawer-foot{padding:1rem 1.5rem;border-top:0.5px solid var(--border2);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--card);}
+.btn-save{background:var(--accent);color:#0a1820;border:none;border-radius:8px;padding:9px 24px;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-save:hover{background:#81d4fa;}
+.btn-cancel{background:rgba(255,255,255,0.06);color:var(--muted);border:0.5px solid var(--border2);border-radius:8px;padding:9px 18px;font-size:14px;cursor:pointer;}
+.btn-cancel:hover{color:var(--text);}
+.confirm-box{background:var(--card);border:0.5px solid var(--border);border-radius:14px;padding:2rem;width:100%;max-width:340px;text-align:center;}
+.confirm-box h4{font-size:16px;font-weight:700;margin-bottom:8px;}
+.confirm-box p{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.7;}
+.confirm-btns{display:flex;gap:10px;justify-content:center;}
+.btn-confirm-del{background:#f07070;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-confirm-del:hover{background:#d95c5c;}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#0a2015;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="n-brand" href="admin.html">MARTY <em>CREW</em></a>
+  <span class="n-badge">管理画面</span>
+  <a class="n-tab" href="catalog.html" style="margin-left:auto;">← カタログを見る</a>
+  <button class="n-out" onclick="doLogout()">ログアウト</button>
+</nav>
+
+<div class="topbar">
+  <h2>商品管理</h2>
+  <span class="topbar-count" id="count-label"></span>
+  <button class="btn btn-export" onclick="exportJSON()">💾 JSONエクスポート</button>
+  <button class="btn btn-add" onclick="openDrawer(null)">＋ 商品を追加</button>
+</div>
+
+<div class="filterbar">
+  <div class="search-box">
+    <span class="search-ico">🔍</span>
+    <input id="sq" placeholder="商品名・説明で検索" oninput="renderTable()">
+  </div>
+  <select class="cat-select" id="cat-filter" onchange="renderTable()">
+    <option value="all">すべてのカテゴリ</option>
+    <option value="apparel">アパレル</option>
+    <option value="goods">雑貨・小物</option>
+    <option value="stationery">文具・ノベルティ</option>
+    <option value="other">その他</option>
+  </select>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>画像</th>
+        <th>商品名 / 説明</th>
+        <th>カテゴリ</th>
+        <th>卸値</th>
+        <th>最低ロット</th>
+        <th>NEW</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<footer>© 2025 Marty Crew. All rights reserved. — Admin Panel</footer>
+
+<!-- EDIT DRAWER -->
+<div class="mback" id="drawer-back" onclick="if(event.target===this)closeDrawer()">
+  <div class="drawer">
+    <div class="drawer-head">
+      <h3 id="drawer-title">商品を追加</h3>
+      <button class="drawer-close" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="drawer-body">
+      <div class="form-row">
+        <label class="form-label">商品画像 / アイコン絵文字</label>
+        <div class="img-upload-area" onclick="document.getElementById('img-file').click()">
+          <input type="file" id="img-file" accept="image/*" onchange="handleImgUpload(event)">
+          <div id="img-preview-wrap">
+            <div class="img-emoji-big" id="preview-emoji">📦</div>
+            <div class="img-upload-hint">クリックして画像をアップロード<br>または下の絵文字を選択</div>
+          </div>
+        </div>
+        <div class="emoji-row" id="emoji-row"></div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">商品名 <span>*</span></label>
+        <input class="form-input" id="f-name" placeholder="例：Martyクルー Tシャツ">
+      </div>
+      <div class="form-row">
+        <label class="form-label">商品説明</label>
+        <textarea class="form-textarea" id="f-desc" placeholder="商品の説明を入力してください"></textarea>
+      </div>
+      <div class="form-row">
+        <label class="form-label">カテゴリ <span>*</span></label>
+        <select class="form-select" id="f-cat">
+          <option value="apparel">アパレル</option>
+          <option value="goods">雑貨・小物</option>
+          <option value="stationery">文具・ノベルティ</option>
+          <option value="other">その他</option>
+        </select>
+      </div>
+      <div class="form-row-2">
+        <div>
+          <label class="form-label">定価</label>
+          <input class="form-input" id="f-retail" placeholder="なし">
+        </div>
+        <div>
+          <label class="form-label">卸値 <span>*</span></label>
+          <input class="form-input" id="f-price" placeholder="例：1,200円">
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div>
+          <label class="form-label">最低ロット <span>*</span></label>
+          <input class="form-input" type="number" id="f-lot" placeholder="例：30">
+        </div>
+        <div>
+          <label class="form-label">納期目安</label>
+          <input class="form-input" id="f-lead" placeholder="例：約30日">
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div>
+          <label class="form-label">素材</label>
+          <input class="form-input" id="f-material" placeholder="例：コットン100%">
+        </div>
+        <div>
+          <label class="form-label">サイズ</label>
+          <input class="form-input" id="f-size" placeholder="例：S/M/L/XL">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">カラー展開</label>
+        <textarea class="form-textarea" id="f-colors" style="min-height:60px" placeholder="例：ブラック・ホワイト・グレー"></textarea>
+      </div>
+      <div class="form-row">
+        <label class="form-label">NEWバッジ</label>
+        <div class="toggle-row">
+          <label class="toggle">
+            <input type="checkbox" id="f-new">
+            <div class="toggle-bg"></div>
+            <div class="toggle-knob"></div>
+          </label>
+          <span style="font-size:12px;color:var(--muted)">ONにするとカードに「NEW」バッジが表示されます</span>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-foot">
+      <button class="btn-cancel" onclick="closeDrawer()">キャンセル</button>
+      <button class="btn-save" onclick="saveProduct()">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="mback" id="del-back" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-box">
+    <h4>商品を削除</h4>
+    <p id="del-msg"></p>
+    <div class="confirm-btns">
+      <button class="btn-cancel" onclick="closeConfirm()">キャンセル</button>
+      <button class="btn-confirm-del" onclick="confirmDelete()">削除する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
