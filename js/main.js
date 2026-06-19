@@ -1,5 +1,5 @@
 /* =========================================
-   MARTY CREW Wholesale Portal – Shared JS
+   MARTY DRIVE Wholesale Portal – Shared JS
    ========================================= */
 
 const ACCOUNT = "oweners";
@@ -15,16 +15,16 @@ const CAT = {
 const products = [
   {
     id:1, cat:"apparel", e1:"👕", e2:"🎨",
-    name:"Martyクルー Tシャツ",
+    name:"Marty Drive Tシャツ",
     colors:"キャラはオーナー様によって変わります。カラーも自由に選択いただけます。",
     retail:"なし", price:"1,200円", lot:30, lead:"約30日",
     material:"コットン100%", size:"S / M / L / XL / XXL",
-    desc:"MartyクルーのメインキャラクターをフロントにプリントしたオリジナルTシャツ。企業ロゴの追加プリントも可能です。",
+    desc:"Marty DriveのメインキャラクターをフロントにプリントしたオリジナルTシャツ。企業ロゴの追加プリントも可能です。",
     isnew:false
   },
   {
     id:2, cat:"apparel", e1:"🧥", e2:"✨",
-    name:"Martyクルー パーカー",
+    name:"Marty Drive パーカー",
     colors:"キャラはオーナー様によって変わります。カラーはブラック・ネイビー・グレーからお選びいただけます。",
     retail:"なし", price:"2,800円", lot:30, lead:"約35日",
     material:"コットン80% ポリエステル20%", size:"S / M / L / XL / XXL",
@@ -33,7 +33,7 @@ const products = [
   },
   {
     id:3, cat:"apparel", e1:"🧢", e2:"🎩",
-    name:"Martyクルー キャップ",
+    name:"Marty Drive キャップ",
     colors:"ブラック・ホワイトからお選びいただけます。",
     retail:"なし", price:"1,500円", lot:50, lead:"約30日",
     material:"コットン100%", size:"フリーサイズ（調整可）",
@@ -55,7 +55,7 @@ const products = [
     colors:"ナチュラル・ブラックからお選びいただけます。",
     retail:"なし", price:"600円", lot:50, lead:"約25日",
     material:"キャンバス（8oz）", size:"W380 × H420 × D100mm",
-    desc:"マチ付きの使いやすいキャンバストートバッグ。Martyクルーのイラストをシルクスクリーン印刷。",
+    desc:"マチ付きの使いやすいキャンバストートバッグ。Marty Driveのイラストをシルクスクリーン印刷。",
     isnew:false
   },
   {
@@ -64,7 +64,7 @@ const products = [
     colors:"成形色＋塗装。カラーはご相談ください。",
     retail:"なし", price:"1,800円", lot:100, lead:"約60日",
     material:"PVC", size:"高さ約80mm",
-    desc:"Martyクルーの世界観を立体化したコレクタブルフィギュア。企業ノベルティとして高い訴求力。商品画像はイメージになります。",
+    desc:"Marty Driveの世界観を立体化したコレクタブルフィギュア。企業ノベルティとして高い訴求力。商品画像はイメージになります。",
     isnew:true
   },
   {
@@ -82,7 +82,7 @@ const products = [
     colors:"表紙フルカラー印刷。キャラはオーナー様によって変わります。",
     retail:"なし", price:"500円", lot:50, lead:"約25日",
     material:"用紙80g/m²", size:"A5（148 × 210mm）80枚",
-    desc:"Martyクルーデザインの表紙を採用したA5ノート。企業名・ロゴを裏表紙に入れることも可能。",
+    desc:"Marty Driveデザインの表紙を採用したA5ノート。企業名・ロゴを裏表紙に入れることも可能。",
     isnew:false
   },
   {
@@ -109,7 +109,7 @@ const products = [
     colors:"フルカラー印刷。キャラはオーナー様によって変わります。",
     retail:"なし", price:"300円", lot:200, lead:"約15日",
     material:"ブリキ缶", size:"直径57mm",
-    desc:"Martyクルーキャラクターの缶バッジ3個セット。イベント配布・限定グッズとして人気。",
+    desc:"Marty Driveキャラクターの缶バッジ3個セット。イベント配布・限定グッズとして人気。",
     isnew:true
   },
   {
