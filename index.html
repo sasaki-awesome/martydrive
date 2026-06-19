@@ -1,57 +1,367 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ログイン | MARTY CREW Wholesale</title>
-<link rel="stylesheet" href="css/style.css">
-</head>
-<body>
 
-<div class="login-page">
-  <div class="l-brand">MARTY CREW</div>
-  <div class="l-sub">Wholesale Portal / 卸売ポータル</div>
-  <div class="l-box">
-    <h2>アクセス認証
-      <span style="font-size:11px;color:var(--muted);font-weight:400;display:block;margin-top:2px;">
-        Access Authentication
-      </span>
-    </h2>
-    <p>本サイトは企業様向けの卸売専用ポータルです。アカウント名とパスワードを入力してください。</p>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --dark:#0d0f14;--panel:#161a24;--card:#1c2132;--card2:#222840;
+  --accent:#4fc3f7;--yellow:#f5c842;--green:#3dd68c;
+  --border:rgba(79,195,247,0.15);--border2:rgba(255,255,255,0.08);
+  --text:#e8eaf6;--muted:rgba(232,234,246,0.55);
+}
+#app{font-family:var(--font-sans);background:var(--dark);color:var(--text);min-height:700px;border-radius:12px;overflow:hidden;}
 
-    <div class="fl">アカウント名 / Account name</div>
-    <input class="fi" id="acc" type="text" placeholder="Account name"
-           autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+/* LOGIN */
+#login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:700px;padding:2rem;}
+.l-brand{font-size:30px;font-weight:500;color:var(--accent);letter-spacing:.1em;margin-bottom:2px;}
+.l-sub{font-size:11px;color:var(--muted);letter-spacing:.22em;text-transform:uppercase;margin-bottom:2rem;}
+.l-box{background:var(--panel);border:0.5px solid var(--border);border-radius:14px;padding:2rem;width:100%;max-width:360px;}
+.l-box h2{font-size:15px;font-weight:500;margin-bottom:4px;}
+.l-box p{font-size:12px;color:var(--muted);margin-bottom:1.5rem;line-height:1.7;}
+.fl{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-bottom:5px;}
+.fi{width:100%;background:rgba(255,255,255,0.05);border:0.5px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;margin-bottom:14px;outline:none;}
+.fi:focus{border-color:var(--accent);}
+.l-btn{width:100%;background:var(--accent);color:#0a1820;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;margin-top:2px;}
+.l-btn:hover{background:#81d4fa;}
+.l-err{font-size:12px;color:#f09595;margin-top:10px;text-align:center;display:none;}
 
-    <div class="fl">パスワード / Password</div>
-    <input class="fi" id="pw" type="password" placeholder="Password"
-           autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+/* NAV */
+#main{display:none;}
+nav{background:rgba(13,15,20,0.97);border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 1.5rem;height:50px;position:sticky;top:0;z-index:20;}
+.n-brand{font-size:16px;font-weight:500;color:var(--accent);letter-spacing:.07em;flex:1;}
+.n-brand em{color:var(--yellow);font-style:normal;}
+.n-tab{font-size:12px;color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;}
+.n-tab:hover,.n-tab.on{color:var(--accent);background:rgba(79,195,247,0.08);}
+.n-out{font-size:12px;color:var(--muted);cursor:pointer;margin-left:auto;}
+.n-out:hover{color:#f09595;}
 
-    <button class="l-btn" onclick="doLogin()">ログイン / Login</button>
-    <div class="l-err" id="err">
-      アカウント名またはパスワードが正しくありません<br>
-      <span style="font-size:11px;">Incorrect account name or password</span>
+/* HERO */
+.hero{position:relative;height:300px;display:flex;align-items:flex-end;padding:2rem;overflow:hidden;background:var(--panel);}
+.hero-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:2rem;font-size:90px;opacity:.06;}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,15,20,1) 0%,rgba(13,15,20,.45) 55%,rgba(13,15,20,.1) 100%);}
+.hero-c{position:relative;z-index:1;}
+.hero-ey{font-size:10px;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;}
+.hero-t{font-size:30px;font-weight:500;line-height:1.25;margin-bottom:8px;}
+.hero-t em{color:var(--accent);font-style:normal;}
+.hero-d{font-size:12px;color:var(--muted);max-width:460px;line-height:1.8;margin-bottom:1.25rem;}
+.hero-btn{display:inline-block;border:0.5px solid var(--accent);color:var(--accent);border-radius:20px;padding:6px 20px;font-size:12px;cursor:pointer;background:transparent;}
+.hero-btn:hover{background:rgba(79,195,247,0.1);}
+
+/* CONTROL */
+.ctrl{background:var(--panel);border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);padding:1.25rem 1.5rem;}
+.ctrl-top{display:flex;align-items:flex-end;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;}
+.ctrl-lbl{font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px;}
+.ctrl-ttl{font-size:16px;font-weight:500;}
+.s-wrap{position:relative;margin-left:auto;}
+.s-inp{width:240px;background:rgba(255,255,255,0.06);border:0.5px solid var(--border);border-radius:8px;padding:8px 14px 8px 34px;color:var(--text);font-size:13px;outline:none;}
+.s-inp:focus{border-color:var(--accent);}
+.s-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;}
+.pills{display:flex;gap:8px;flex-wrap:wrap;}
+.pill{font-size:12px;padding:5px 16px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;}
+.pill:hover{border-color:var(--accent);color:var(--accent);}
+.pill.on{background:rgba(79,195,247,0.13);border-color:var(--accent);color:var(--accent);}
+
+/* PRODUCT GRID */
+.gwrap{padding:1.5rem;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+.pcard{background:var(--card);border:0.5px solid var(--border2);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .15s,transform .15s;display:flex;flex-direction:column;}
+.pcard:hover{border-color:var(--accent);transform:translateY(-2px);}
+.pcard-img{height:170px;background:linear-gradient(145deg,#1c2230,#141826);display:flex;align-items:center;justify-content:center;font-size:60px;position:relative;}
+.pcard-new{position:absolute;top:8px;left:8px;background:var(--green);color:#0a2015;font-size:9px;font-weight:500;padding:2px 8px;border-radius:10px;}
+.pcard-body{padding:14px 14px 0;}
+.pcard-cat{font-size:11px;color:var(--accent);margin-bottom:4px;}
+.pcard-name{font-size:15px;font-weight:500;margin-bottom:6px;line-height:1.4;}
+.pcard-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.price-box{display:flex;gap:10px;border-top:0.5px solid var(--border2);padding:10px 0;margin:0;}
+.pb{flex:1;padding:0 4px;}
+.pb-lbl{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.pb-val{font-size:14px;font-weight:500;color:var(--text);}
+.pb-val.whl{color:var(--yellow);}
+.pb-divider{width:0.5px;background:var(--border2);flex-shrink:0;}
+.lot-row{padding:8px 14px 14px;font-size:11px;color:var(--muted);}
+.lot-row b{color:var(--text);}
+.detail-btn{margin:0 14px 14px;background:rgba(79,195,247,0.1);border:0.5px solid var(--border);color:var(--accent);border-radius:8px;padding:9px;font-size:13px;cursor:pointer;width:calc(100% - 28px);text-align:center;}
+.detail-btn:hover{background:rgba(79,195,247,0.18);}
+.no-r{padding:3rem;text-align:center;color:var(--muted);font-size:14px;grid-column:1/-1;}
+
+/* MODAL BACKDROP */
+.mback{display:none;position:fixed;inset:0;background:rgba(5,8,18,0.9);z-index:100;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
+.mback.on{display:flex;}
+.modal{background:var(--card);border:0.5px solid var(--border);border-radius:16px;width:100%;max-width:860px;display:flex;flex-direction:column;position:relative;margin:auto;}
+.mclose-btn{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;}
+.mclose-btn:hover{background:rgba(255,255,255,0.18);}
+.modal-inner{display:flex;gap:0;min-height:400px;}
+/* LEFT: image column */
+.m-imgs{width:55%;flex-shrink:0;padding:1.25rem;display:flex;flex-direction:column;gap:10px;}
+.m-img-main{border-radius:10px;height:220px;background:linear-gradient(145deg,#1c2230,#141826);display:flex;align-items:center;justify-content:center;font-size:80px;}
+.m-img-sub{border-radius:10px;height:160px;background:linear-gradient(145deg,#16192a,#111523);display:flex;align-items:center;justify-content:center;font-size:60px;opacity:.7;}
+/* RIGHT: info column */
+.m-info{flex:1;padding:1.5rem 1.5rem 1.5rem 0;border-left:0.5px solid var(--border2);}
+.m-cat{font-size:11px;color:var(--accent);margin-bottom:6px;}
+.m-title{font-size:24px;font-weight:500;margin-bottom:10px;line-height:1.3;}
+.m-tags{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.m-tag{font-size:11px;padding:3px 12px;border-radius:10px;border:0.5px solid var(--border);}
+.m-tag.t1{color:var(--accent);background:rgba(79,195,247,0.1);}
+.m-tag.t2{color:var(--green);background:rgba(61,214,140,0.1);}
+.m-desc{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:4px;}
+.m-note{font-size:11px;color:var(--muted);margin-bottom:16px;}
+.m-price-row{display:flex;gap:8px;margin-bottom:16px;}
+.m-pb{flex:1;background:var(--card2);border-radius:8px;padding:10px 12px;}
+.m-pb-lbl{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.m-pb-val{font-size:16px;font-weight:500;}
+.m-pb-val.whl{color:var(--yellow);}
+.m-pb-val.lot{color:var(--green);}
+.m-section{margin-bottom:14px;}
+.m-section-ttl{font-size:13px;font-weight:500;margin-bottom:8px;}
+.m-color-box{background:var(--card2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.7;}
+.m-spec-row{font-size:12px;color:var(--muted);margin-bottom:4px;}
+
+/* ABOUT / FLOW */
+.about-hero{padding:2.5rem 2rem;text-align:center;}
+.about-hero h2{font-size:22px;font-weight:500;margin-bottom:1rem;}
+.about-hero h2 em{color:var(--accent);font-style:normal;}
+.about-hero p{font-size:13px;color:var(--muted);line-height:1.9;max-width:540px;margin:0 auto;}
+.acards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;padding:0 1.5rem 2rem;}
+.acard{background:var(--card);border:0.5px solid var(--border2);border-radius:12px;padding:1.25rem;}
+.acard-icon{font-size:26px;margin-bottom:.75rem;}
+.acard h4{font-size:13px;font-weight:500;margin-bottom:5px;color:var(--accent);}
+.acard p{font-size:12px;color:var(--muted);line-height:1.7;}
+.flow-wrap{padding:1.5rem 2rem 2.5rem;}
+.flow-wrap h3{font-size:16px;font-weight:500;margin-bottom:1.25rem;}
+.steps{display:flex;flex-direction:column;gap:12px;}
+.step{display:flex;gap:14px;}
+.step-n{width:28px;height:28px;border-radius:50%;background:rgba(79,195,247,0.1);border:0.5px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--accent);flex-shrink:0;}
+.step h5{font-size:13px;font-weight:500;margin-bottom:3px;}
+.step p{font-size:12px;color:var(--muted);line-height:1.6;}
+.contact{background:var(--panel);border-top:0.5px solid var(--border);padding:2rem 1.5rem;text-align:center;}
+.contact p{color:var(--muted);font-size:13px;margin-bottom:6px;}
+.c-email{color:var(--accent);font-size:15px;font-weight:500;}
+.footer{padding:.75rem 1.5rem;text-align:center;font-size:11px;color:var(--muted);border-top:0.5px solid var(--border);}
+.page{display:none;}.page.on{display:block;}
+</style>
+
+<div id="app">
+  <div id="login-wrap">
+    <div class="l-brand">MARTY CREW</div>
+    <div class="l-sub">Wholesale Portal / 卸売ポータル</div>
+    <div class="l-box">
+      <h2>アクセス認証 <span style="font-size:11px;color:var(--muted);font-weight:400;display:block;margin-top:2px;">Access Authentication</span></h2>
+      <p>本サイトは企業様向けの卸売専用ポータルです。アカウント名とパスワードを入力してください。</p>
+      <div class="fl">アカウント名 / Account name</div>
+      <input class="fi" id="acc" type="text" placeholder="Account name" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="fl">パスワード / Password</div>
+      <input class="fi" id="pw" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="l-btn" onclick="doLogin()">ログイン / Login</button>
+      <div class="l-err" id="err">アカウント名またはパスワードが正しくありません<br><span style="font-size:11px;">Incorrect account name or password</span></div>
+    </div>
+  </div>
+
+  <div id="main">
+    <nav>
+      <div class="n-brand">MARTY <em>CREW</em></div>
+      <div class="n-tab on" onclick="goPage('catalog',this)">カタログ</div>
+      <div class="n-tab" onclick="goPage('about',this)">ブランドについて</div>
+      <div class="n-tab" onclick="goPage('flow',this)">ご注文の流れ</div>
+      <div class="n-out" onclick="doLogout()">ログアウト</div>
+    </nav>
+
+    <div id="page-catalog" class="page on">
+      <div class="hero">
+        <div class="hero-bg">🚗🛸🚀🤖</div>
+        <div class="hero-ov"></div>
+        <div class="hero-c">
+          <div class="hero-ey">PRICE UPDATE / WHOLESALE CATALOG</div>
+          <div class="hero-t">Marty Crew<br><em>キャラオーナー様向け</em><br>カタログサイト</div>
+          <div class="hero-d">商品詳細・カラーバリエーション・サイズ表・価格改定版のカタログページです。</div>
+          <div class="hero-btn" onclick="document.querySelector('.ctrl').scrollIntoView({behavior:'smooth'})">カテゴリ一覧</div>
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <div>
+            <div class="ctrl-lbl">CATALOG CONTROL</div>
+            <div class="ctrl-ttl">商品を絞り込む</div>
+          </div>
+          <div class="s-wrap">
+            <i class="ti ti-search s-ico" aria-hidden="true"></i>
+            <input class="s-inp" id="sq" placeholder="商品名・カテゴリ・カラーで検索" oninput="applyFilter()">
+          </div>
+        </div>
+        <div class="pills" id="pills">
+          <button class="pill on" onclick="setFilter('all',this)">すべて</button>
+          <button class="pill" onclick="setFilter('apparel',this)">アパレル</button>
+          <button class="pill" onclick="setFilter('goods',this)">雑貨・小物</button>
+          <button class="pill" onclick="setFilter('stationery',this)">文具・ノベルティ</button>
+          <button class="pill" onclick="setFilter('other',this)">その他</button>
+        </div>
+      </div>
+
+      <div class="gwrap"><div class="grid" id="grid"></div></div>
+    </div>
+
+    <div id="page-about" class="page">
+      <div class="about-hero">
+        <h2>Martyクルーとは<br><em>Who is Marty Crew?</em></h2>
+        <p>車に関わる様々な問題を解決するべく、未来の宇宙からやってきたのがMartyクルーです。宇宙での経験を活かして、車業界に新たな活力とイノベーションをもたらすことを使命としています。そのユニークな世界観を、あなたのブランドのグッズとして展開しませんか？</p>
+      </div>
+      <div class="acards">
+        <div class="acard"><div class="acard-icon">🚗</div><h4>クルマへの愛</h4><p>車文化を愛し、その未来を守るために宇宙からやってきたキャラクター。車業界に関わる企業様との親和性抜群です。</p></div>
+        <div class="acard"><div class="acard-icon">🛸</div><h4>宇宙×未来感</h4><p>スペーシーでユニークな世界観は、他のキャラクターグッズと差別化できる強力なブランドアイデンティティです。</p></div>
+        <div class="acard"><div class="acard-icon">⚡</div><h4>イノベーション</h4><p>EV・カーテック企業など、革新的なブランドイメージとの相性が良いキャラクターデザインです。</p></div>
+        <div class="acard"><div class="acard-icon">🎁</div><h4>グッズ展開力</h4><p>アパレルから雑貨まで幅広い商品展開が可能。企業のノベルティやオリジナルグッズとして多彩な使い方ができます。</p></div>
+      </div>
+      <div class="contact">
+        <p>お問い合わせ・発注のご相談 / Inquiries & Orders</p>
+        <div class="c-email">wholesale@martycrew.jp</div>
+        <p style="margin-top:6px;font-size:12px;">平日 10:00〜18:00（土日祝休）</p>
+      </div>
+    </div>
+
+    <div id="page-flow" class="page">
+      <div class="flow-wrap">
+        <h3>ご注文の流れ / How to Order</h3>
+        <div class="steps">
+          <div class="step"><div class="step-n">1</div><div><h5>商品・仕様の選択</h5><p>カタログから希望商品を選び、カラーや仕様をお選びください。サンプル請求も可能です。</p></div></div>
+          <div class="step"><div class="step-n">2</div><div><h5>お問い合わせ・見積依頼</h5><p>メールアドレスより商品名・数量・希望納期をお知らせください。</p></div></div>
+          <div class="step"><div class="step-n">3</div><div><h5>デザイン入稿・確認</h5><p>担当者よりご連絡の上、オリジナルデザインのデータをご入稿いただきます。校正確認後に製造開始です。</p></div></div>
+          <div class="step"><div class="step-n">4</div><div><h5>製造・納品</h5><p>お支払い確認後、製造を開始します。納期は商品・数量によって異なりますのでお問い合わせ時にご確認ください。</p></div></div>
+        </div>
+      </div>
+      <div class="contact">
+        <p>お問い合わせ・発注のご相談 / Inquiries & Orders</p>
+        <div class="c-email">wholesale@martycrew.jp</div>
+        <p style="margin-top:6px;font-size:12px;">平日 10:00〜18:00（土日祝休）</p>
+      </div>
+    </div>
+
+    <div class="footer">© 2025 Marty Crew. All rights reserved. — Wholesale Portal</div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mback" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="mclose-btn" onclick="closeModal()">×</button>
+    <div class="modal-inner">
+      <div class="m-imgs" id="m-imgs"></div>
+      <div class="m-info" id="m-info"></div>
     </div>
   </div>
 </div>
 
-<script src="js/main.js"></script>
 <script>
-  /* すでにログイン済みならカタログへ */
-  if (sessionStorage.getItem("mc_auth") === "1") {
-    window.location.href = "catalog.html";
-  }
+const ACCOUNT="oweners", PASS="marty2025";
+const CAT={apparel:"アパレル",goods:"雑貨・小物",stationery:"文具・ノベルティ",other:"その他"};
+const products=[
+  {id:1,cat:"apparel",e1:"👕",e2:"🎨",name:"Martyクルー Tシャツ",colors:"キャラはオーナー様によって変わります。カラーも自由に選択いただけます。",retail:"なし",price:"1,200円",lot:30,lead:"約30日",material:"コットン100%",size:"幅—,高さ—　S/M/L/XL/XXL",desc:"MartyクルーのメインキャラクターをフロントにプリントしたオリジナルTシャツ。企業ロゴの追加プリントも可能です。",isnew:false},
+  {id:2,cat:"apparel",e1:"🧥",e2:"✨",name:"Martyクルー パーカー",colors:"キャラはオーナー様によって変わります。カラーはブラック・ネイビー・グレーからお選びいただけます。",retail:"なし",price:"2,800円",lot:30,lead:"約35日",material:"コットン80% ポリエステル20%",size:"幅—,高さ—　S/M/L/XL/XXL",desc:"裏起毛で暖かいプルオーバーパーカー。バックプリントと胸元の刺繍ロゴを組み合わせた高品質な仕上がり。",isnew:true},
+  {id:3,cat:"apparel",e1:"🧢",e2:"🎩",name:"Martyクルー キャップ",colors:"ブラック・ホワイトからお選びいただけます。",retail:"なし",price:"1,500円",lot:50,lead:"約30日",material:"コットン100%",size:"フリーサイズ（調整可）",desc:"フロントにマーティー刺繍、バックにブランドロゴ入りのストラップバックキャップ。",isnew:false},
+  {id:4,cat:"goods",e1:"🔑",e2:"💎",name:"アクリルキーホルダー",colors:"キャラはオーナー様によって変わります。カラーも自由に選択いただけます。",retail:"なし",price:"300円",lot:100,lead:"約20日",material:"アクリル",size:"幅40mm,高さ40mm,厚み5mm",desc:"フルカラーUV印刷のアクリルキーホルダー。Martyキャラクターを鮮やかに表現。ノベルティに最適。商品画像はイメージになります。",isnew:false},
+  {id:5,cat:"goods",e1:"🎒",e2:"👜",name:"トートバッグ",colors:"ナチュラル・ブラックからお選びいただけます。",retail:"なし",price:"600円",lot:50,lead:"約25日",material:"キャンバス（8oz）",size:"幅380mm,高さ420mm,奥行100mm",desc:"マチ付きの使いやすいキャンバストートバッグ。Martyクルーのイラストをシルクスクリーン印刷。",isnew:false},
+  {id:6,cat:"goods",e1:"🪆",e2:"🤖",name:"フィギュア（ミニ）",colors:"成形色＋塗装。カラーはご相談ください。",retail:"なし",price:"1,800円",lot:100,lead:"約60日",material:"PVC",size:"高さ約80mm",desc:"Martyクルーの世界観を立体化したコレクタブルフィギュア。企業ノベルティとして高い訴求力。商品画像はイメージになります。",isnew:true},
+  {id:7,cat:"goods",e1:"🖼️",e2:"🚗",name:"ステッカーパック（5枚組）",colors:"フルカラー印刷。キャラはオーナー様によって変わります。",retail:"なし",price:"250円",lot:200,lead:"約15日",material:"ビニール防水素材",size:"各50〜80mm",desc:"防水・耐UV加工済みのビニールステッカー5枚セット。車やPCにも貼れる高品質素材。",isnew:false},
+  {id:8,cat:"stationery",e1:"📓",e2:"📖",name:"ノートブック A5",colors:"表紙フルカラー印刷。キャラはオーナー様によって変わります。",retail:"なし",price:"500円",lot:50,lead:"約25日",material:"用紙80g/m²",size:"A5（幅148mm,高さ210mm）80枚",desc:"Martyクルーデザインの表紙を採用したA5ノート。企業名・ロゴを裏表紙に入れることも可能。",isnew:false},
+  {id:9,cat:"stationery",e1:"✏️",e2:"🖊️",name:"ボールペン",colors:"ブラック軸・ホワイト軸からお選びいただけます。",retail:"なし",price:"180円",lot:100,lead:"約20日",material:"プラスチック軸",size:"全長148mm",desc:"ワンポイントのMartyロゴ入りボールペン。ビジネスシーンでも使えるシンプルなデザイン。",isnew:false},
+  {id:10,cat:"stationery",e1:"🗒️",e2:"📋",name:"付箋セット",colors:"3色アソート。カラーはご相談ください。",retail:"なし",price:"350円",lot:100,lead:"約20日",material:"上質紙",size:"75×75mm×50枚×3冊",desc:"Martyキャラクター柄の付箋3冊セット。デスク周りを彩るオフィスノベルティに。",isnew:false},
+  {id:11,cat:"other",e1:"🧲",e2:"📌",name:"缶バッジセット（3個）",colors:"フルカラー印刷。キャラはオーナー様によって変わります。",retail:"なし",price:"300円",lot:200,lead:"約15日",material:"ブリキ缶",size:"直径57mm",desc:"Martyクルーキャラクターの缶バッジ3個セット。イベント配布・限定グッズとして人気。",isnew:true},
+  {id:12,cat:"other",e1:"📦",e2:"🎁",name:"ギフトボックスセット",colors:"内容に合わせてご相談ください。",retail:"なし",price:"3,500円〜",lot:30,lead:"約45日",material:"各種",size:"W210×H60×D297mm程度",desc:"Tシャツ・ステッカー・缶バッジを詰め合わせたギフトセット。取引先への贈答品や周年記念に。",isnew:false},
+];
 
-  function doLogin() {
-    const a = document.getElementById("acc").value.trim();
-    const p = document.getElementById("pw").value;
-    if (a === ACCOUNT && p === PASS) {
-      sessionStorage.setItem("mc_auth", "1");
-      window.location.href = "catalog.html";
-    } else {
-      document.getElementById("err").style.display = "block";
-    }
-  }
+let currentCat="all";
+function doLogin(){
+  const a=document.getElementById('acc').value.trim();
+  const p=document.getElementById('pw').value;
+  if(a===ACCOUNT&&p===PASS){
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('main').style.display='block';
+    renderGrid();
+  }else{document.getElementById('err').style.display='block';}
+}
+function doLogout(){
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('main').style.display='none';
+  document.getElementById('acc').value='';
+  document.getElementById('pw').value='';
+  document.getElementById('err').style.display='none';
+}
+function setFilter(cat,btn){
+  currentCat=cat;
+  document.querySelectorAll('.pill').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilter();
+}
+function applyFilter(){
+  const q=document.getElementById('sq').value.toLowerCase();
+  const list=products.filter(p=>{
+    const cok=currentCat==='all'||p.cat===currentCat;
+    const qok=!q||p.name.toLowerCase().includes(q)||CAT[p.cat].includes(q)||p.colors.toLowerCase().includes(q);
+    return cok&&qok;
+  });
+  renderGrid(list);
+}
+function renderGrid(list){
+  if(!list)list=products;
+  const g=document.getElementById('grid');
+  if(!list.length){g.innerHTML='<div class="no-r">該当する商品が見つかりませんでした</div>';return;}
+  g.innerHTML=list.map(p=>`
+    <div class="pcard">
+      <div class="pcard-img">
+        ${p.isnew?'<div class="pcard-new">NEW</div>':''}
+        ${p.e1}
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-cat">${CAT[p.cat]}</div>
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-desc">${p.desc.length>45?p.desc.slice(0,45)+'…':p.desc}</div>
+      </div>
+      <div class="price-box">
+        <div class="pb"><div class="pb-lbl">定価</div><div class="pb-val">${p.retail}</div></div>
+        <div class="pb-divider"></div>
+        <div class="pb"><div class="pb-lbl">卸値</div><div class="pb-val whl">${p.price}</div></div>
+      </div>
+      <div class="lot-row">最低ロット：<b>${p.lot}</b></div>
+      <button class="detail-btn" onclick="openModal(${p.id})">詳細を見る</button>
+    </div>
+  `).join('');
+}
+function openModal(id){
+  const p=products.find(x=>x.id===id);
+  document.getElementById('m-imgs').innerHTML=`
+    <div class="m-img-main">${p.e1}</div>
+    <div class="m-img-sub">${p.e2}</div>
+  `;
+  document.getElementById('m-info').innerHTML=`
+    <div class="m-cat">${CAT[p.cat]}</div>
+    <div class="m-title">${p.name}</div>
+    <div class="m-tags">
+      <span class="m-tag t1">税込表示</span>
+      <span class="m-tag t2">最低ロット ${p.lot}</span>
+      ${p.isnew?'<span class="m-tag" style="color:var(--yellow);background:rgba(245,200,66,0.1);border-color:rgba(245,200,66,0.2);">NEW</span>':''}
+    </div>
+    <p class="m-desc">${p.desc}</p>
+    <p class="m-note">商品画像はイメージになります。</p>
+    <div class="m-price-row">
+      <div class="m-pb"><div class="m-pb-lbl">定価</div><div class="m-pb-val">${p.retail}</div></div>
+      <div class="m-pb"><div class="m-pb-lbl">卸値</div><div class="m-pb-val whl">${p.price}</div></div>
+      <div class="m-pb"><div class="m-pb-lbl">最低ロット</div><div class="m-pb-val lot">${p.lot}</div></div>
+    </div>
+    <div class="m-section">
+      <div class="m-section-ttl">カラー</div>
+      <div class="m-color-box">${p.colors}</div>
+    </div>
+    <div class="m-section">
+      <div class="m-section-ttl">素材・サイズ</div>
+      <div class="m-spec-row">素材：${p.material}</div>
+      <div class="m-spec-row">サイズ：${p.size}</div>
+      <div class="m-spec-row">納期目安：${p.lead}</div>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('on');
+}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+function goPage(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.n-tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('page-'+name).classList.add('on');
+  el.classList.add('on');
+}
 </script>
-</body>
-</html>
