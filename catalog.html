@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>カタログ | MARTY CREW Wholesale</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="n-brand" href="catalog.html">MARTY <em>CREW</em></a>
+  <a class="n-tab on" id="nav-catalog" href="catalog.html">カタログ</a>
+  <a class="n-tab" id="nav-about" href="about.html">ブランドについて</a>
+  <a class="n-tab" id="nav-flow" href="flow.html">ご注文の流れ</a>
+  <button class="n-out" onclick="doLogout()">ログアウト</button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg">🚗 🛸 🚀 🤖</div>
+  <div class="hero-ov"></div>
+  <div class="hero-c">
+    <div class="hero-ey">PRICE UPDATE / WHOLESALE CATALOG</div>
+    <div class="hero-t">Marty Crew<br><em>キャラオーナー様向け</em><br>カタログサイト</div>
+    <div class="hero-d">商品詳細・カラーバリエーション・サイズ表・価格改定版のカタログページです。</div>
+    <a class="hero-btn" href="#ctrl">カテゴリ一覧</a>
+  </div>
+</div>
+
+<!-- CATALOG CONTROL -->
+<div class="ctrl" id="ctrl">
+  <div class="ctrl-top">
+    <div>
+      <div class="ctrl-lbl">CATALOG CONTROL</div>
+      <div class="ctrl-ttl">商品を絞り込む</div>
+    </div>
+    <div class="s-wrap">
+      <span class="s-ico">🔍</span>
+      <input class="s-inp" id="sq" placeholder="商品名・カテゴリ・カラーで検索" oninput="applyFilter()">
+    </div>
+  </div>
+  <div class="pills">
+    <button class="pill on"  onclick="setFilter('all',this)">すべて</button>
+    <button class="pill"     onclick="setFilter('apparel',this)">アパレル</button>
+    <button class="pill"     onclick="setFilter('goods',this)">雑貨・小物</button>
+    <button class="pill"     onclick="setFilter('stationery',this)">文具・ノベルティ</button>
+    <button class="pill"     onclick="setFilter('other',this)">その他</button>
+  </div>
+</div>
+
+<!-- GRID -->
+<div class="gwrap">
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact">
+  <p>お問い合わせ・発注のご相談 / Inquiries &amp; Orders</p>
+  <div class="c-email">wholesale@martycrew.jp</div>
+  <p style="margin-top:6px;font-size:12px;">平日 10:00〜18:00（土日祝休）</p>
+</div>
+<footer>© 2025 Marty Crew. All rights reserved. — Wholesale Portal</footer>
+
+<!-- MODAL -->
+<div class="mback" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="mclose-btn" onclick="closeModal()">×</button>
+    <div class="modal-inner">
+      <div class="m-imgs" id="m-imgs"></div>
+      <div class="m-info" id="m-info"></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+  checkAuth();
+  setActiveNav("nav-catalog");
+
+  let currentCat = "all";
+
+  function setFilter(cat, btn) {
+    currentCat = cat;
+    document.querySelectorAll(".pill").forEach(b => b.classList.remove("on"));
+    btn.classList.add("on");
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const q = document.getElementById("sq").value.toLowerCase();
+    const list = products.filter(p => {
+      const cok = currentCat === "all" || p.cat === currentCat;
+      const qok = !q ||
+        p.name.toLowerCase().includes(q) ||
+        CAT[p.cat].includes(q) ||
+        p.colors.toLowerCase().includes(q);
+      return cok && qok;
+    });
+    renderGrid(list);
+  }
+
+  function renderGrid(list) {
+    if (!list) list = products;
+    const g = document.getElementById("grid");
+    if (!list.length) {
+      g.innerHTML = '<div class="no-r">該当する商品が見つかりませんでした</div>';
+      return;
+    }
+    g.innerHTML = list.map(p => `
+      <div class="pcard">
+        <div class="pcard-img">
+          ${p.isnew ? '<div class="pcard-new">NEW</div>' : ""}
+          ${p.e1}
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-cat">${CAT[p.cat]}</div>
+          <div class="pcard-name">${p.name}</div>
+          <div class="pcard-desc">${p.desc.length > 48 ? p.desc.slice(0,48) + "…" : p.desc}</div>
+        </div>
+        <div class="price-box">
+          <div class="pb">
+            <div class="pb-lbl">定価</div>
+            <div class="pb-val">${p.retail}</div>
+          </div>
+          <div class="pb-divider"></div>
+          <div class="pb">
+            <div class="pb-lbl">卸値</div>
+            <div class="pb-val whl">${p.price}</div>
+          </div>
+        </div>
+        <div class="lot-row">最低ロット：<b>${p.lot}</b></div>
+        <button class="detail-btn" onclick="openModal(${p.id})">詳細を見る</button>
+      </div>
+    `).join("");
+  }
+
+  /* 初期描画 */
+  renderGrid(products);
+</script>
+</body>
+</html>

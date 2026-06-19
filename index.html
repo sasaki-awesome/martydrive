@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ログイン | MARTY CREW Wholesale</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="login-page">
+  <div class="l-brand">MARTY CREW</div>
+  <div class="l-sub">Wholesale Portal / 卸売ポータル</div>
+  <div class="l-box">
+    <h2>アクセス認証
+      <span style="font-size:11px;color:var(--muted);font-weight:400;display:block;margin-top:2px;">
+        Access Authentication
+      </span>
+    </h2>
+    <p>本サイトは企業様向けの卸売専用ポータルです。アカウント名とパスワードを入力してください。</p>
+
+    <div class="fl">アカウント名 / Account name</div>
+    <input class="fi" id="acc" type="text" placeholder="Account name"
+           autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+
+    <div class="fl">パスワード / Password</div>
+    <input class="fi" id="pw" type="password" placeholder="Password"
+           autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+
+    <button class="l-btn" onclick="doLogin()">ログイン / Login</button>
+    <div class="l-err" id="err">
+      アカウント名またはパスワードが正しくありません<br>
+      <span style="font-size:11px;">Incorrect account name or password</span>
+    </div>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+  /* すでにログイン済みならカタログへ */
+  if (sessionStorage.getItem("mc_auth") === "1") {
+    window.location.href = "catalog.html";
+  }
+
+  function doLogin() {
+    const a = document.getElementById("acc").value.trim();
+    const p = document.getElementById("pw").value;
+    if (a === ACCOUNT && p === PASS) {
+      sessionStorage.setItem("mc_auth", "1");
+      window.location.href = "catalog.html";
+    } else {
+      document.getElementById("err").style.display = "block";
+    }
+  }
+</script>
+</body>
+</html>
