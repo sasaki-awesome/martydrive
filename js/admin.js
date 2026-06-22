@@ -277,6 +277,177 @@ function exportJSON() {
   showToast("💾 JSONをエクスポートしました");
 }
 
+/* =========================================
+   CSV EXPORT
+   ========================================= */
+const CSV_COLS = [
+  { key:"id",       label:"ID" },
+  { key:"name",     label:"商品名" },
+  { key:"cat",      label:"カテゴリ" },
+  { key:"desc",     label:"商品説明" },
+  { key:"retail",   label:"定価" },
+  { key:"price",    label:"卸値" },
+  { key:"lot",      label:"最低ロット" },
+  { key:"lead",     label:"納期目安" },
+  { key:"material", label:"素材" },
+  { key:"size",     label:"サイズ" },
+  { key:"colors",   label:"カラー展開" },
+  { key:"isnew",    label:"NEWバッジ" },
+  { key:"e1",       label:"絵文字" },
+];
+
+function csvEscape(val) {
+  const s = String(val == null ? "" : val);
+  /* ダブルクォート・カンマ・改行を含む場合はクォートで囲む */
+  if (s.includes('"') || s.includes(',') || s.includes('\n')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function exportCSV() {
+  const header = CSV_COLS.map(c => csvEscape(c.label)).join(",");
+  const rows   = products.map(p =>
+    CSV_COLS.map(c => {
+      const v = p[c.key];
+      if (c.key === "isnew") return v ? "TRUE" : "FALSE";
+      return csvEscape(v);
+    }).join(",")
+  );
+  const bom  = "\uFEFF"; /* Excel用BOM */
+  const csv  = bom + [header, ...rows].join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = "marty_products.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("📄 CSVをエクスポートしました");
+}
+
+/* =========================================
+   CSV IMPORT
+   ========================================= */
+let _csvParsed = []; /* インポート確認前の一時保存 */
+
+function importCSV(ev) {
+  const file = ev.target.files[0];
+  ev.target.value = ""; /* 同じファイルを再選択できるようリセット */
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const text = e.target.result
+        .replace(/^\uFEFF/, "")   /* BOM除去 */
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n");
+
+      const lines  = splitCSVLines(text);
+      if (lines.length < 2) { showToast("⚠️ データが空です", "#f5c842"); return; }
+
+      const header = parseCSVRow(lines[0]).map(h => h.trim());
+      const rows   = lines.slice(1).filter(l => l.trim() !== "");
+
+      _csvParsed = rows.map((row, i) => {
+        const vals = parseCSVRow(row);
+        const obj  = {};
+        header.forEach((h, idx) => { obj[h] = (vals[idx] || "").trim(); });
+
+        /* CSV列名→内部キーのマッピング */
+        const colMap = {};
+        CSV_COLS.forEach(c => { colMap[c.label] = c.key; });
+
+        const p = {};
+        Object.keys(obj).forEach(h => {
+          const key = colMap[h] || h;
+          p[key] = obj[h];
+        });
+
+        /* 型変換 */
+        p.id     = p.id ? Number(p.id) : Date.now() + i;
+        p.lot    = parseInt(p.lot) || 0;
+        p.isnew  = String(p.isnew).toUpperCase() === "TRUE";
+        p.img    = p.img || null;
+        p.e1     = p.e1 || "📦";
+        p.e2     = p.e2 || "📦";
+        if (!p.retail) p.retail = "なし";
+
+        return p;
+      }).filter(p => p.name); /* 商品名のない行は除外 */
+
+      if (!_csvParsed.length) { showToast("⚠️ 有効なデータが見つかりません", "#f5c842"); return; }
+
+      /* 確認モーダル表示 */
+      document.getElementById("csv-confirm-msg").textContent =
+        `${_csvParsed.length} 件の商品データを読み込みました。どちらのモードで取り込みますか？`;
+      document.getElementById("csv-confirm-back").classList.add("on");
+
+    } catch(err) {
+      console.error(err);
+      showToast("⚠️ CSV読み込みエラー：形式を確認してください", "#f07070");
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+function executeCsvImport(mode) {
+  if (mode === "overwrite") {
+    products.splice(0, products.length, ..._csvParsed);
+    showToast(`✅ ${_csvParsed.length}件で上書きしました`);
+  } else {
+    /* IDが重複する場合は既存を上書き、新規はpush */
+    _csvParsed.forEach(np => {
+      const idx = products.findIndex(p => p.id === np.id);
+      if (idx !== -1) products[idx] = { ...products[idx], ...np };
+      else products.push(np);
+    });
+    showToast(`✅ ${_csvParsed.length}件を追加しました`);
+  }
+  _csvParsed = [];
+  saveToSession();
+  closeCsvConfirm();
+  renderTable();
+}
+
+function closeCsvConfirm() {
+  document.getElementById("csv-confirm-back").classList.remove("on");
+  _csvParsed = [];
+}
+
+/* CSV行を正しくパースする（クォート内のカンマ・改行対応） */
+function splitCSVLines(text) {
+  const lines = [];
+  let cur = "", inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') { inQ = !inQ; cur += c; }
+    else if (c === '\n' && !inQ) { lines.push(cur); cur = ""; }
+    else { cur += c; }
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function parseCSVRow(line) {
+  const fields = [];
+  let cur = "", inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else { inQ = !inQ; }
+    } else if (c === ',' && !inQ) {
+      fields.push(cur); cur = "";
+    } else {
+      cur += c;
+    }
+  }
+  fields.push(cur);
+  return fields;
+}
+
 /* ---- TOAST ---- */
 function showToast(msg, color = "var(--green)") {
   const t = document.getElementById("toast");
