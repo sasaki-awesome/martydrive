@@ -14,7 +14,8 @@
   <a class="n-tab on" id="nav-catalog" href="catalog.html">カタログ</a>
   <a class="n-tab" id="nav-about" href="about.html">ブランドについて</a>
   <a class="n-tab" id="nav-flow" href="flow.html">ご注文の流れ</a>
-  <button class="n-out" onclick="doLogout()">ログアウト</button>
+  <a class="n-tab" href="admin.html" style="margin-left:auto;font-size:11px;opacity:.7;">⚙ 管理画面</a>
+  <button class="n-out" onclick="doLogout()" style="margin-left:0;">ログアウト</button>
 </nav>
 
 <!-- HERO -->
@@ -79,6 +80,19 @@
   checkAuth();
   setActiveNav("nav-catalog");
 
+  /* 管理画面での更新を反映するため localStorage を再読み込み */
+  (function reloadProducts() {
+    try {
+      const saved = localStorage.getItem("md_products");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          products.splice(0, products.length, ...parsed);
+        }
+      }
+    } catch(e) {}
+  })();
+
   let currentCat = "all";
 
   function setFilter(cat, btn) {
@@ -94,8 +108,8 @@
       const cok = currentCat === "all" || p.cat === currentCat;
       const qok = !q ||
         p.name.toLowerCase().includes(q) ||
-        CAT[p.cat].includes(q) ||
-        p.colors.toLowerCase().includes(q);
+        (CAT[p.cat] || "").includes(q) ||
+        (p.colors || "").toLowerCase().includes(q);
       return cok && qok;
     });
     renderGrid(list);
@@ -110,14 +124,17 @@
     }
     g.innerHTML = list.map(p => `
       <div class="pcard">
-        <div class="pcard-img">
+        <div class="pcard-img" style="${p.img ? 'padding:0;overflow:hidden;' : ''}">
           ${p.isnew ? '<div class="pcard-new">NEW</div>' : ""}
-          ${p.e1}
+          ${p.img
+            ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`
+            : `<span style="font-size:52px;">${p.e1 || "📦"}</span>`
+          }
         </div>
         <div class="pcard-body">
-          <div class="pcard-cat">${CAT[p.cat]}</div>
+          <div class="pcard-cat">${CAT[p.cat] || p.cat}</div>
           <div class="pcard-name">${p.name}</div>
-          <div class="pcard-desc">${p.desc.length > 48 ? p.desc.slice(0,48) + "…" : p.desc}</div>
+          <div class="pcard-desc">${(p.desc||"").length > 48 ? (p.desc||"").slice(0,48) + "…" : (p.desc||"")}</div>
         </div>
         <div class="price-box">
           <div class="pb">

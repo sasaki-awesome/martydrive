@@ -12,7 +12,7 @@ let uploadedImg   = null;   /* base64 or null */
 /* ---- INIT ---- */
 (function init() {
   checkAuth();
-  const saved = sessionStorage.getItem("mc_products");
+  const saved = localStorage.getItem("md_products");
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
@@ -24,7 +24,7 @@ let uploadedImg   = null;   /* base64 or null */
 
 /* ---- SESSION PERSIST ---- */
 function saveToSession() {
-  sessionStorage.setItem("mc_products", JSON.stringify(products));
+  localStorage.setItem("md_products", JSON.stringify(products));
 }
 
 /* =========================================
