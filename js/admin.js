@@ -11,7 +11,7 @@ let uploadedImg   = null;   /* base64 or null */
 
 /* ---- INIT ---- */
 (function init() {
-  checkAuth();
+  /* 認証はadmin.htmlのadminAuthCheck()が担当 */
   const saved = localStorage.getItem("md_products");
   if (saved) {
     try {

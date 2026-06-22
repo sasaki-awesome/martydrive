@@ -91,15 +91,45 @@ td{padding:10px;font-size:13px;vertical-align:middle;}
 .btn-confirm-del:hover{background:#d95c5c;}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#0a2015;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
 .toast.show{opacity:1;}
+/* ADMIN LOGIN */
+.admin-login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
+.admin-login-brand{font-size:26px;font-weight:700;color:var(--accent);letter-spacing:.1em;margin-bottom:2px;}
+.admin-login-brand em{color:var(--yellow);font-style:normal;}
+.admin-login-sub{font-size:11px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:2rem;}
+.admin-login-box{background:var(--panel);border:0.5px solid var(--border);border-radius:14px;padding:2rem;width:100%;max-width:360px;}
+.admin-login-box h2{font-size:15px;font-weight:700;margin-bottom:4px;}
+.admin-login-box p{font-size:12px;color:var(--muted);margin-bottom:1.5rem;line-height:1.7;}
+.admin-err{font-size:12px;color:#f09595;margin-top:10px;text-align:center;display:none;}
+#admin-main{display:none;}
 </style>
 </head>
 <body>
+
+<!-- 管理者ログイン画面 -->
+<div class="admin-login-wrap" id="admin-login">
+  <div class="admin-login-brand">MARTY <em>DRIVE</em></div>
+  <div class="admin-login-sub">Admin Panel / 管理者専用</div>
+  <div class="admin-login-box">
+    <h2>管理者認証
+      <span style="font-size:11px;color:var(--muted);font-weight:400;display:block;margin-top:2px;">Admin Authentication</span>
+    </h2>
+    <p>管理者専用ページです。管理者パスワードを入力してください。</p>
+    <div class="fl">管理者パスワード / Admin Password</div>
+    <input class="fi" id="admin-pw" type="password" placeholder="Admin Password"
+           autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    <button class="l-btn" onclick="doAdminLogin()">ログイン / Login</button>
+    <div class="admin-err" id="admin-err">パスワードが正しくありません / Incorrect password</div>
+  </div>
+</div>
+
+<!-- 管理画面メインコンテンツ -->
+<div id="admin-main">
 
 <nav>
   <a class="n-brand" href="admin.html">MARTY <em>DRIVE</em></a>
   <span class="n-badge">管理画面</span>
   <a class="n-tab" href="catalog.html" style="margin-left:auto;">← カタログを見る</a>
-  <button class="n-out" onclick="doLogout()">ログアウト</button>
+  <button class="n-out" onclick="doAdminLogout()">ログアウト</button>
 </nav>
 
 <div class="topbar">
@@ -258,7 +288,46 @@ td{padding:10px;font-size:13px;vertical-align:middle;}
 
 <div class="toast" id="toast"></div>
 
+</div><!-- /#admin-main -->
+
 <script src="js/main.js"></script>
+<script>
+/* ---- 管理者ログイン ---- */
+const ADMIN_PASS = "admin2025"; /* ← ここを変更してパスワードを設定 */
+
+(function adminAuthCheck() {
+  /* カタログの通常認証チェック */
+  if (sessionStorage.getItem("mc_auth") !== "1") {
+    window.location.href = "index.html";
+    return;
+  }
+  /* 管理者認証チェック */
+  if (sessionStorage.getItem("mc_admin") === "1") {
+    document.getElementById("admin-login").style.display = "none";
+    document.getElementById("admin-main").style.display  = "block";
+  }
+})();
+
+function doAdminLogin() {
+  const pw = document.getElementById("admin-pw").value;
+  if (pw === ADMIN_PASS) {
+    sessionStorage.setItem("mc_admin", "1");
+    document.getElementById("admin-login").style.display = "none";
+    document.getElementById("admin-main").style.display  = "block";
+    document.getElementById("admin-pw").value = "";
+  } else {
+    document.getElementById("admin-err").style.display = "block";
+  }
+}
+
+function doAdminLogout() {
+  sessionStorage.removeItem("mc_admin");
+  document.getElementById("admin-login").style.display = "flex";
+  document.getElementById("admin-main").style.display  = "none";
+  document.getElementById("admin-pw").value = "";
+  document.getElementById("admin-err").style.display = "none";
+}
+</script>
 <script src="js/admin.js"></script>
 </body>
 </html>
