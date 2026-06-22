@@ -152,13 +152,26 @@ td{padding:10px;font-size:13px;vertical-align:middle;}
     <div class="drawer-body">
       <div class="form-row">
         <label class="form-label">商品画像 / アイコン絵文字</label>
-        <div class="img-upload-area" onclick="document.getElementById('img-file').click()">
-          <input type="file" id="img-file" accept="image/*" onchange="handleImgUpload(event)">
-          <div id="img-preview-wrap">
-            <div class="img-emoji-big" id="preview-emoji">📦</div>
-            <div class="img-upload-hint">クリックして画像をアップロード<br>または下の絵文字を選択</div>
+
+        <!-- ファイル入力（非表示）: JS から click() で呼ぶ -->
+        <input type="file" id="img-file" accept="image/jpeg,image/png,image/gif,image/webp"
+               style="display:none;" onchange="handleImgUpload(event)">
+
+        <!-- クリックでアップロード -->
+        <div class="img-upload-area" onclick="triggerFileSelect()" style="cursor:pointer;">
+          <!-- 絵文字プレビュー（デフォルト表示） -->
+          <div id="prev-emoji" style="font-size:48px;margin-bottom:6px;display:block;">📦</div>
+          <!-- 画像プレビュー（アップロード後に表示） -->
+          <img id="prev-img"
+               style="display:none;width:80px;height:80px;border-radius:8px;object-fit:cover;margin:0 auto 8px;display:none;"
+               alt="プレビュー">
+          <div class="img-upload-hint">
+            クリックして画像をアップロード（JPG / PNG / GIF / WebP, 5MB以下）<br>
+            または下の絵文字を選択
           </div>
         </div>
+
+        <!-- 絵文字ピッカー -->
         <div class="emoji-row" id="emoji-row"></div>
       </div>
       <div class="form-row">

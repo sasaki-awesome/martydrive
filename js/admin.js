@@ -4,27 +4,93 @@
 
 const EMOJIS = ["👕","🧥","🧢","🔑","🎒","🪆","🖼️","📓","✏️","🗒️","🧲","📦","🎽","👟","🧣","🚗","🛸","🚀","🤖","💎","🎁","📌","🎨","✨"];
 
-let editingId  = null;
-let deleteId   = null;
+let editingId   = null;
+let deleteId    = null;
 let selectedEmoji = "📦";
-let uploadedImg   = null;
+let uploadedImg   = null;   /* base64 or null */
 
 /* ---- INIT ---- */
 (function init() {
   checkAuth();
-
-  /* セッションに保存済みの商品データがあれば復元 */
   const saved = sessionStorage.getItem("mc_products");
   if (saved) {
-    try { Object.assign(products, JSON.parse(saved)); products.length = JSON.parse(saved).length; products.splice(0); JSON.parse(saved).forEach(p => products.push(p)); } catch(e){}
+    try {
+      const parsed = JSON.parse(saved);
+      products.splice(0, products.length, ...parsed);
+    } catch(e) { console.warn("restore failed", e); }
   }
-
   renderTable();
 })();
 
-/* ---- PERSIST ---- */
+/* ---- SESSION PERSIST ---- */
 function saveToSession() {
   sessionStorage.setItem("mc_products", JSON.stringify(products));
+}
+
+/* =========================================
+   PREVIEW HELPERS
+   img タグは最初から HTML に存在し、
+   JS は src と display だけ切り替える
+   ========================================= */
+function previewShowEmoji(e) {
+  document.getElementById("prev-emoji").textContent  = e;
+  document.getElementById("prev-emoji").style.display = "block";
+  document.getElementById("prev-img").style.display   = "none";
+  document.getElementById("prev-img").src             = "";
+}
+
+function previewShowImage(src) {
+  document.getElementById("prev-emoji").style.display = "none";
+  document.getElementById("prev-img").src             = src;
+  document.getElementById("prev-img").style.display   = "block";
+}
+
+function previewReset() {
+  uploadedImg = null;
+  document.getElementById("img-file").value = "";
+  previewShowEmoji(selectedEmoji);
+}
+
+/* ---- EMOJI PICKER ---- */
+function buildEmojiRow() {
+  document.getElementById("emoji-row").innerHTML = EMOJIS.map(e =>
+    `<span class="emoji-opt${e === selectedEmoji ? " sel" : ""}"
+           onclick="selectEmoji('${e}')">${e}</span>`
+  ).join("");
+}
+
+function selectEmoji(e) {
+  selectedEmoji = e;
+  uploadedImg   = null;
+  document.getElementById("img-file").value = "";
+  previewShowEmoji(e);
+  buildEmojiRow();
+}
+
+/* ---- IMAGE UPLOAD ---- */
+function triggerFileSelect() {
+  document.getElementById("img-file").click();
+}
+
+function handleImgUpload(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  /* サイズ上限 5MB */
+  if (file.size > 5 * 1024 * 1024) {
+    alert("画像サイズは5MB以下にしてください");
+    ev.target.value = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(r) {
+    uploadedImg = r.target.result;
+    previewShowImage(uploadedImg);
+  };
+  reader.onerror = function() {
+    alert("画像の読み込みに失敗しました");
+    ev.target.value = "";
+  };
+  reader.readAsDataURL(file);
 }
 
 /* ---- TABLE ---- */
@@ -34,7 +100,7 @@ function renderTable() {
 
   const list = products.filter(p => {
     const cok = cf === "all" || p.cat === cf;
-    const qok = !q || p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q);
+    const qok = !q || p.name.toLowerCase().includes(q) || (p.desc||"").toLowerCase().includes(q);
     return cok && qok;
   });
 
@@ -50,14 +116,17 @@ function renderTable() {
     <tr>
       <td>
         <div class="td-img">
-          ${p.img ? `<img src="${p.img}" alt="">` : p.e1}
+          ${p.img
+            ? `<img src="${p.img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`
+            : `<span style="font-size:26px;">${p.e1 || "📦"}</span>`
+          }
         </div>
       </td>
       <td>
         <div class="td-name">${p.name}</div>
-        <div class="td-desc">${p.desc}</div>
+        <div class="td-desc">${p.desc || ""}</div>
       </td>
-      <td><span class="td-cat">${CAT[p.cat]}</span></td>
+      <td><span class="td-cat">${CAT[p.cat] || p.cat}</span></td>
       <td><span class="td-price">${p.price}</span></td>
       <td><span class="td-lot">${p.lot}個〜</span></td>
       <td>${p.isnew ? '<span class="td-new">NEW</span>' : "—"}</td>
@@ -71,77 +140,17 @@ function renderTable() {
   `).join("");
 }
 
-/* ---- EMOJI ---- */
-function buildEmojiRow() {
-  const row = document.getElementById("emoji-row");
-  row.innerHTML = EMOJIS.map(e => `
-    <span class="emoji-opt${e === selectedEmoji ? " sel" : ""}"
-          onclick="selectEmoji('${e}')">${e}</span>
-  `).join("");
-}
-
-function selectEmoji(e) {
-  selectedEmoji = e;
-  uploadedImg   = null;
-  showPreviewEmoji(e);
-  buildEmojiRow();
-}
-
-/* ---- IMAGE UPLOAD ---- */
-function handleImgUpload(ev) {
-  const file = ev.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = r => {
-    uploadedImg = r.result;
-    showPreviewImg(uploadedImg);
-  };
-  reader.readAsDataURL(file);
-}
-
-/* ---- DRAWER ---- */
-function resetPreview() {
-  /* 既存のプレビュー画像を完全にクリア */
-  const oldImg = document.getElementById("preview-img-el");
-  if (oldImg) oldImg.remove();
-  /* ファイル入力もリセット */
-  const fi = document.getElementById("img-file");
-  if (fi) fi.value = "";
-  uploadedImg = null;
-}
-
-function showPreviewImg(src) {
-  /* 画像プレビューを表示し絵文字を隠す */
-  document.getElementById("preview-emoji").style.display = "none";
-  let img = document.getElementById("preview-img-el");
-  if (!img) {
-    img = document.createElement("img");
-    img.id = "preview-img-el";
-    img.className = "img-preview";
-    img.style.cssText = "width:80px;height:80px;border-radius:8px;object-fit:cover;margin:0 auto 8px;display:block;";
-    document.getElementById("img-preview-wrap").prepend(img);
-  }
-  img.src = src;
-}
-
-function showPreviewEmoji(e) {
-  /* 絵文字プレビューを表示し画像を隠す */
-  const old = document.getElementById("preview-img-el");
-  if (old) old.remove();
-  const emojiEl = document.getElementById("preview-emoji");
-  emojiEl.textContent = e;
-  emojiEl.style.display = "block";
-}
-
+/* ---- DRAWER OPEN ---- */
 function openDrawer(id) {
   editingId = id;
-  resetPreview();
 
   if (id === null) {
-    /* 新規追加 */
+    /* 新規 */
     document.getElementById("drawer-title").textContent = "商品を追加";
     selectedEmoji = "📦";
-    showPreviewEmoji("📦");
+    uploadedImg   = null;
+    previewShowEmoji("📦");
+
     document.getElementById("f-name").value     = "";
     document.getElementById("f-desc").value     = "";
     document.getElementById("f-cat").value      = "apparel";
@@ -157,16 +166,16 @@ function openDrawer(id) {
     /* 編集 */
     const p = products.find(x => x.id === id);
     if (!p) return;
+
     document.getElementById("drawer-title").textContent = "商品を編集";
     selectedEmoji = p.e1 || "📦";
+    uploadedImg   = p.img || null;
 
+    /* プレビュー：画像があれば画像、なければ絵文字 */
     if (p.img) {
-      /* 保存済み画像がある場合 */
-      uploadedImg = p.img;
-      showPreviewImg(p.img);
+      previewShowImage(p.img);
     } else {
-      /* 絵文字のみの場合 */
-      showPreviewEmoji(selectedEmoji);
+      previewShowEmoji(selectedEmoji);
     }
 
     document.getElementById("f-name").value     = p.name     || "";
@@ -182,6 +191,7 @@ function openDrawer(id) {
     document.getElementById("f-new").checked    = p.isnew    || false;
   }
 
+  document.getElementById("img-file").value = "";
   buildEmojiRow();
   document.getElementById("drawer-back").classList.add("on");
 }
@@ -212,9 +222,9 @@ function saveProduct() {
     size:     document.getElementById("f-size").value.trim(),
     colors:   document.getElementById("f-colors").value.trim(),
     isnew:    document.getElementById("f-new").checked,
-    e1: selectedEmoji,
-    e2: "📦",
-    img: uploadedImg || null,
+    e1:       selectedEmoji,
+    e2:       "📦",
+    img:      uploadedImg || null,
   };
 
   if (editingId === null) {
@@ -223,7 +233,7 @@ function saveProduct() {
     showToast("✅ 商品を追加しました");
   } else {
     const idx = products.findIndex(x => x.id === editingId);
-    products[idx] = { ...products[idx], ...data };
+    if (idx !== -1) products[idx] = { ...products[idx], ...data };
     showToast("✅ 商品を更新しました");
   }
 
@@ -270,7 +280,7 @@ function exportJSON() {
 /* ---- TOAST ---- */
 function showToast(msg, color = "var(--green)") {
   const t = document.getElementById("toast");
-  t.textContent  = msg;
+  t.textContent      = msg;
   t.style.background = color;
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 2500);
